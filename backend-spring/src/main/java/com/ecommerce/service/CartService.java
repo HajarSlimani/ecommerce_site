@@ -24,7 +24,7 @@ public class CartService {
     private final UserRepository userRepository;
 
     public Cart getOrCreateActiveCart(Long userId) {
-        return cartRepository.findByUserId(userId)
+        return cartRepository.findByUserIdWithItems(userId)
                 .filter(cart -> cart.getStatus() == CartStatus.ACTIVE)
                 .orElseGet(() -> createCart(userId));
     }
@@ -57,7 +57,7 @@ public class CartService {
                 .build();
 
         cartItemRepository.save(item);
-        return cartRepository.findById(cart.getId()).orElseThrow();
+        return cartRepository.findByIdWithItems(cart.getId()).orElseThrow();
     }
 
     @Transactional
@@ -71,6 +71,6 @@ public class CartService {
         }
 
         cartItemRepository.delete(item);
-        return cartRepository.findById(cart.getId()).orElseThrow();
+        return cartRepository.findByIdWithItems(cart.getId()).orElseThrow();
     }
 }

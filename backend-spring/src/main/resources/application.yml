@@ -3,7 +3,7 @@ server:
 
 spring:
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/ecommerce}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://postgres:5432/projet_pfa}
     username: ${SPRING_DATASOURCE_USERNAME:ecommerce}
     password: ${SPRING_DATASOURCE_PASSWORD:ecommerce}
   jpa:

@@ -3,11 +3,11 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB: ecommerce
+      POSTGRES_DB: projet_pfa
       POSTGRES_USER: ecommerce
       POSTGRES_PASSWORD: ecommerce
     ports:
-      - "5432:5432"
+      - "5433:5432"   # OK, celle-ci était correcte
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -20,7 +20,7 @@ services:
     build: ./ml-service-fastapi
     restart: unless-stopped
     ports:
-      - "8000:8000"
+      - "8001:8000"   # OK aussi
 
   backend:
     build: ./backend-spring
@@ -31,12 +31,12 @@ services:
       ml-service:
         condition: service_started
     environment:
-      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/ecommerce
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/projet_pfa   # <- remettre 5432
       SPRING_DATASOURCE_USERNAME: ecommerce
       SPRING_DATASOURCE_PASSWORD: ecommerce
-      PRICING_ENGINE_URL: http://ml-service:8000
+      PRICING_ENGINE_URL: http://ml-service:8000                        # <- remettre 8000
     ports:
-      - "8082:8080"
+      - "8083:8080"   # OK, celle-ci était correcte
 
   frontend:
     build: ./frontend-react
@@ -44,9 +44,9 @@ services:
     depends_on:
       - backend
     environment:
-      VITE_API_BASE_URL: http://localhost:8082
+      VITE_API_BASE_URL: http://localhost:8083   # celle-ci est correcte : le frontend tourne dans TON navigateur, donc il doit utiliser le port vu depuis ta machine
     ports:
-      - "5173:5173"
+      - "5174:5173"
 
 volumes:
   postgres_data:
