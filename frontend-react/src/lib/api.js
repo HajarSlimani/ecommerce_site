@@ -6,16 +6,17 @@ export const currency = new Intl.NumberFormat('fr-FR', {
   currency: 'EUR'
 });
 
+// Repli tant que l'endpoint GET /api/categories n'existe pas côté backend.
 export const categories = [
-  { name: 'Jeux', key: 'games', accent: 'Play now' },
-  { name: 'Matériel', key: 'gear', accent: 'Upgrade gear' },
-  { name: 'Accessoires', key: 'accessories', accent: 'Best picks' }
+  { name: 'Jeux', key: 'games', accent: 'Voir les jeux' },
+  { name: 'Matériel', key: 'gear', accent: 'Voir le matériel' },
+  { name: 'Accessoires', key: 'accessories', accent: 'Voir les accessoires' }
 ];
 
 export const weekOffer = {
-  headline: 'OFFRES DE LA SEMAINE',
-  text: '-10 % sur tous les jeux',
-  cta: 'Acheter'
+  headline: 'Offre de la semaine',
+  text: '-10 % sur toute la sélection grade NEW',
+  cta: 'Voir la boutique'
 };
 
 export const fallbackProducts = [
@@ -26,6 +27,7 @@ export const fallbackProducts = [
     basePrice: 999,
     category: 'Laptops',
     stock: 2,
+    imageUrl: 'https://picsum.photos/seed/thinkpad-x1/480/360',
     units: [
       { id: 1, serialNumber: 'SN-X1-001', grade: 'A', currentPrice: 999, status: 'AVAILABLE' },
       { id: 2, serialNumber: 'SN-X1-002', grade: 'B', currentPrice: 949, status: 'AVAILABLE' }
@@ -48,6 +50,27 @@ export async function fetchJson(path, options = {}) {
   return response.json();
 }
 
+// Le backend n'expose pas encore de champ imageUrl pour les produits.
+// En attendant, on génère une image de repli stable (toujours la même pour
+// un même produit) afin que chaque carte affiche un visuel cohérent, et on
+// respecte un éventuel item.imageUrl dès qu'il sera disponible côté API.
+export function productImage(item) {
+  if (item?.imageUrl) {
+    return item.imageUrl;
+  }
+  const seed = encodeURIComponent(item?.name || item?.id || 'produit');
+  return `https://picsum.photos/seed/${seed}/480/360`;
+}
+
+export const FALLBACK_IMAGE =
+  'data:image/svg+xml;utf8,' +
+  encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" width="480" height="360" viewBox="0 0 480 360">
+      <rect width="480" height="360" fill="#F4F5F7"/>
+      <text x="50%" y="50%" font-family="Inter, sans-serif" font-size="16" fill="#6B7280" text-anchor="middle">Image indisponible</text>
+    </svg>`
+  );
+
 export function normalizeProducts(raw) {
   if (!Array.isArray(raw)) {
     return [];
@@ -60,6 +83,7 @@ export function normalizeProducts(raw) {
     basePrice: Number(item.basePrice || 0),
     category: item.category,
     stock: Number(item.stock || 0),
+    imageUrl: item.imageUrl || productImage(item),
     units: Array.isArray(item.units)
       ? item.units.map((unit) => ({
           id: unit.id,

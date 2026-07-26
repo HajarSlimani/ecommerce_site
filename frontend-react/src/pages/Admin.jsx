@@ -32,71 +32,68 @@ export default function Admin() {
 
   return (
     <>
-      <section className="panel-header standalone">
+      <div className="section-head">
         <div>
-          <p className="panel-kicker">Espace admin</p>
+          <span className="eyebrow">Espace admin</span>
           <h2>Tableau de bord</h2>
         </div>
-      </section>
+      </div>
 
-      <section className="stats-grid">
+      <div className="stats-grid">
         <StatCard label="Produits" value={products.length} helper="Catalogue live" />
-        <StatCard label="Panier demo" value={currency.format(totalCart)} helper="User demo #1" />
+        <StatCard label="Panier démo" value={currency.format(totalCart)} helper="User démo #1" />
         <StatCard label="Prix moyen" value={currency.format(avgPrice)} helper="Base catalogue" />
         <StatCard label="Commandes" value={orders.length} helper="Checkout" />
         <StatCard label="Unités" value={totalUnits} helper="Toutes références" />
-      </section>
+      </div>
 
-      <section className="content-grid admin-grid">
+      <div className="two-col">
         <section className="panel">
-          <div className="panel-header">
+          <div className="panel-title">
             <div>
-              <p className="panel-kicker">Produit à ajuster</p>
+              <span className="eyebrow">Produit à ajuster</span>
               <h2>Sélection</h2>
             </div>
           </div>
 
-          <div className="admin-product-list">
-            {products.map((product) => (
-              <button
-                key={product.id}
-                className={`admin-product-row ${product.id === selectedProduct?.id ? 'selected' : ''}`}
-                onClick={() => {
-                  setSelectedProductId(product.id);
-                  setSelectedUnitId(product.units?.[0]?.id || null);
-                }}
-              >
-                <span>{product.name}</span>
-                <strong>{currency.format(product.basePrice || 0)}</strong>
-              </button>
-            ))}
-          </div>
+          {products.map((product) => (
+            <button
+              key={product.id}
+              className={`admin-row ${product.id === selectedProduct?.id ? 'selected' : ''}`}
+              onClick={() => {
+                setSelectedProductId(product.id);
+                setSelectedUnitId(product.units?.[0]?.id || null);
+              }}
+              type="button"
+            >
+              <span>{product.name}</span>
+              <strong>{currency.format(product.basePrice || 0)}</strong>
+            </button>
+          ))}
         </section>
 
-        <aside className="panel pricing-panel">
-          <div className="panel-header">
+        <aside className="panel">
+          <div className="panel-title">
             <div>
-              <p className="panel-kicker">Moteur de prix dynamique</p>
+              <span className="eyebrow">Moteur de prix dynamique</span>
               <h2>{selectedProduct?.name || '—'}</h2>
             </div>
           </div>
 
-          <div className="pricing-summary">
-            <div>
-              <span className="summary-label">Prix de base</span>
-              <strong>{selectedProduct ? currency.format(selectedProduct.basePrice || 0) : '—'}</strong>
-            </div>
-            <div>
-              <span className="summary-label">Unité sélectionnée</span>
-              <strong>{selectedUnit?.serialNumber || '—'}</strong>
-            </div>
-            <div>
-              <span className="summary-label">Prix unité</span>
-              <strong>{selectedUnit ? currency.format(selectedUnit.currentPrice) : '—'}</strong>
-            </div>
+          <div className="summary-row">
+            <span className="label">Prix de base</span>
+            <strong>{selectedProduct ? currency.format(selectedProduct.basePrice || 0) : '—'}</strong>
+          </div>
+          <div className="summary-row">
+            <span className="label">Unité sélectionnée</span>
+            <strong>{selectedUnit?.serialNumber || '—'}</strong>
+          </div>
+          <div className="summary-row">
+            <span className="label">Prix unité</span>
+            <strong>{selectedUnit ? currency.format(selectedUnit.currentPrice) : '—'}</strong>
           </div>
 
-          <label className="range-label">
+          <label className="range-field">
             Demande simulée
             <input
               type="range"
@@ -109,52 +106,37 @@ export default function Admin() {
             <span>{pricingScore.toFixed(2)}</span>
           </label>
 
-          <div className="unit-list">
-            {selectedProduct?.units?.map((unit) => (
-              <button
-                key={unit.id}
-                className={`unit-item ${unit.id === selectedUnit?.id ? 'selected' : ''}`}
-                onClick={() => setSelectedUnitId(unit.id)}
-              >
-                <div>
-                  <strong>{unit.serialNumber}</strong>
-                  <p>{unit.grade} · {unit.status}</p>
-                </div>
-                <span>{currency.format(unit.currentPrice)}</span>
-              </button>
-            ))}
-          </div>
-
-          <div className="panel-actions">
-            <button className="primary-btn full" onClick={() => refreshPricing()} disabled={busy || loading}>
-              Recalculer le prix
-            </button>
-          </div>
+          <button
+            className="btn btn-primary btn-full"
+            onClick={() => refreshPricing()}
+            disabled={busy || loading}
+            type="button"
+          >
+            Recalculer le prix
+          </button>
         </aside>
-      </section>
+      </div>
 
       <section className="panel">
-        <div className="panel-header">
+        <div className="panel-title">
           <div>
-            <p className="panel-kicker">Toutes les commandes</p>
+            <span className="eyebrow">Toutes les commandes</span>
             <h2>Commandes récentes</h2>
           </div>
         </div>
-        <div className="orders-list">
-          {orders.length ? (
-            orders.map((order) => (
-              <article className="order-card" key={order.id}>
-                <div>
-                  <strong>Commande #{order.id}</strong>
-                  <p>{order.status} · {new Date(order.createdAt).toLocaleString('fr-FR')}</p>
-                </div>
-                <span>{currency.format(order.totalAmount)}</span>
-              </article>
-            ))
-          ) : (
-            <div className="empty-state">Aucune commande pour le moment.</div>
-          )}
-        </div>
+        {orders.length ? (
+          orders.map((order) => (
+            <div className="order-row" key={order.id}>
+              <div>
+                <strong>Commande #{order.id}</strong>
+                <span className="meta">{order.status} · {new Date(order.createdAt).toLocaleString('fr-FR')}</span>
+              </div>
+              <span className="amount">{currency.format(order.totalAmount)}</span>
+            </div>
+          ))
+        ) : (
+          <div className="empty-state">Aucune commande pour le moment.</div>
+        )}
       </section>
     </>
   );

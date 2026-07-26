@@ -1,192 +1,216 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { categories, currency, weekOffer } from '../lib/api.js';
+import { categories, currency, weekOffer, FALLBACK_IMAGE } from '../lib/api.js';
 import { useShop } from '../context/ShopContext.jsx';
+import ProductCard from '../components/ProductCard.jsx';
+
+const FEATURES = [
+  {
+    icon: '✓',
+    title: 'Grade certifié',
+    text: 'Chaque unité est inspectée et notée NEW, A ou B avant sa mise en ligne — aucune surprise à la livraison.'
+  },
+  {
+    icon: '⟲',
+    title: 'Retours sous 30 jours',
+    text: "Le produit ne convient pas ? Il est repris et remboursé, sans justification à fournir."
+  },
+  {
+    icon: '⚑',
+    title: 'Garantie 12 mois',
+    text: 'Toutes les unités reconditionnées sont couvertes pendant un an contre les défauts matériels.'
+  },
+  {
+    icon: '⇄',
+    title: 'Prix ajusté en continu',
+    text: 'Un moteur de pricing recalcule les tarifs selon le stock et la demande pour rester compétitif.'
+  }
+];
+
+const TESTIMONIALS = [
+  {
+    initials: 'ML',
+    name: 'Meryem L.',
+    role: 'Cliente vérifiée',
+    quote: "Manette reçue grade A, impeccable. Le prix a même baissé de quelques euros entre ma commande et l'expédition."
+  },
+  {
+    initials: 'YB',
+    name: 'Yassine B.',
+    role: 'Client vérifié',
+    quote: 'Le système de grade rassure vraiment : je savais exactement dans quel état arriverait le clavier.'
+  },
+  {
+    initials: 'SK',
+    name: 'Sofia K.',
+    role: 'Cliente vérifiée',
+    quote: 'Livraison rapide, écran nickel malgré le grade B annoncé. Je recommande sans hésiter.'
+  }
+];
 
 export default function Home() {
-  const { products, addToCart, setSelectedProductId, setSelectedUnitId } = useShop();
+  const { products, addToCart } = useShop();
   const navigate = useNavigate();
-  const [slideIndex, setSlideIndex] = useState(0);
 
-  const slides = useMemo(() => {
-    const top = products.slice(0, 3);
-    if (!top.length) {
-      return [{ key: 'demo', tag: 'New drop', title: 'CYBER KID INFINI', text: 'La sélection cyber du moment.', price: null }];
-    }
-    const tags = ['New drop', 'HOT deal', 'Pro pick'];
-    return top.map((product, index) => ({
-      key: product.id,
-      tag: tags[index] || 'Selection',
-      title: product.name,
-      text: product.description,
-      price: product.basePrice
-    }));
-  }, [products]);
+  const popular = useMemo(() => products.slice(0, 4), [products]);
+  const heroProduct = popular[0];
 
-  useEffect(() => {
-    if (slides.length < 2) {
-      return undefined;
-    }
-    const timer = setInterval(() => {
-      setSlideIndex((current) => (current + 1) % slides.length);
-    }, 4500);
-    return () => clearInterval(timer);
-  }, [slides.length]);
-
-  useEffect(() => {
-    if (slideIndex >= slides.length) {
-      setSlideIndex(0);
-    }
-  }, [slides.length, slideIndex]);
-
-  function openProduct(product) {
-    setSelectedProductId(product.id);
-    setSelectedUnitId(product.units?.[0]?.id || null);
+  function goToProduct(product) {
     navigate('/shop');
-  }
-
-  function quickAdd(event, product) {
-    event.stopPropagation();
-    setSelectedProductId(product.id);
-    setSelectedUnitId(product.units?.[0]?.id || null);
-    addToCart(product.units?.[0]?.id);
   }
 
   return (
     <>
-      <section className="hero-card">
+      <section className="hero">
         <div className="hero-copy">
-          <p className="eyebrow">Boutique de jeux</p>
-          <h1>Améliorez votre jeu</h1>
-          <p className="hero-brand-line">CYBER KID INFINI</p>
-          <p className="hero-text">
-            Disponible sur PC et console. Une boutique pensée comme un site vitrine gaming :
-            hero fort, best sellers, promos et catégories.
+          <span className="eyebrow">Reconditionné · Certifié par grade</span>
+          <h1>Du matériel gaming remis à neuf, jamais remis en question.</h1>
+          <p className="lede">
+            Reforge sélectionne et inspecte des jeux, périphériques et accessoires d'occasion, puis leur
+            attribue un grade NEW, A ou B avant de les proposer à prix ajusté.
           </p>
-
           <div className="hero-actions">
-            <button className="primary-btn" onClick={() => navigate('/shop')}>
-              Acheter
-            </button>
-            <button className="secondary-btn" onClick={() => navigate('/shop')}>
+            <button className="btn btn-primary" onClick={() => navigate('/shop')}>
               Découvrir la boutique
             </button>
+            <button className="btn btn-secondary" onClick={() => navigate('/shop')}>
+              Voir les meilleures ventes
+            </button>
+          </div>
+          <div className="hero-stats">
+            <div className="hero-stat">
+              <strong>{products.length || '—'}</strong>
+              <span>références en stock</span>
+            </div>
+            <div className="hero-stat">
+              <strong>12 mois</strong>
+              <span>de garantie</span>
+            </div>
+            <div className="hero-stat">
+              <strong>30 jours</strong>
+              <span>pour changer d'avis</span>
+            </div>
           </div>
         </div>
 
         <div className="hero-visual">
-          <div className="hero-caption">New drop / cyber selection</div>
-          <div className="hero-orb hero-orb-a" />
-          <div className="hero-orb hero-orb-b" />
-          <div className="floating-card floating-card-main">
-            <div className="floating-label">Nouveauté</div>
-            <div className="floating-value">{slides[slideIndex]?.title || '—'}</div>
-            <div className="floating-meta">
-              {slides[slideIndex]?.price != null ? currency.format(slides[slideIndex].price) : 'Bientôt disponible'}
+          {heroProduct && (
+            <img
+              src={heroProduct.imageUrl}
+              alt=""
+              onError={(event) => {
+                event.currentTarget.onerror = null;
+                event.currentTarget.src = FALLBACK_IMAGE;
+              }}
+            />
+          )}
+          {heroProduct && (
+            <div className="hero-card-float">
+              <div>
+                <div className="label">Nouveauté du moment</div>
+                <div className="value">{heroProduct.name}</div>
+              </div>
+              <div className="price">{currency.format(heroProduct.basePrice || 0)}</div>
             </div>
-          </div>
-
-          <div className="floating-card floating-card-side">
-            <div className="floating-label">Catalogue</div>
-            <div className="floating-value">{products.length}</div>
-            <div className="floating-meta">références en stock</div>
-          </div>
+          )}
         </div>
       </section>
 
-      <section className="banner-slider" aria-label="Meilleures ventes et nouveautés">
-        <div className="banner-track">
-          {slides.map((slide, index) => (
-            <article key={slide.key} className={`banner-slide ${index === slideIndex ? 'active' : ''}`}>
-              <span className="banner-tag">{slide.tag}</span>
-              <h3>{slide.title}</h3>
-              <p>{slide.text}</p>
-              {slide.price != null && <strong>{currency.format(slide.price)}</strong>}
-            </article>
+      <section>
+        <div className="section-head">
+          <div>
+            <span className="eyebrow">Acheter par catégorie</span>
+            <h2>Trois familles de produits reconditionnés</h2>
+          </div>
+        </div>
+        <div className="category-grid">
+          {categories.map((category) => (
+            <button className="category-card" key={category.key} onClick={() => navigate('/shop')}>
+              <span className="count">Collection</span>
+              <div>
+                <h3>{category.name}</h3>
+                <span className="accent">{category.accent} →</span>
+              </div>
+            </button>
           ))}
         </div>
+      </section>
 
-        {slides.length > 1 && (
-          <div className="banner-dots">
-            {slides.map((slide, index) => (
-              <button
-                key={slide.key}
-                className={`banner-dot ${index === slideIndex ? 'active' : ''}`}
-                onClick={() => setSlideIndex(index)}
-                aria-label={`Diapositive ${index + 1}`}
+      <section>
+        <div className="section-head">
+          <div>
+            <span className="eyebrow">Sélection du moment</span>
+            <h2>Produits populaires</h2>
+          </div>
+          <button className="view-link" onClick={() => navigate('/shop')}>
+            Tout voir
+          </button>
+        </div>
+        {popular.length ? (
+          <div className="product-grid">
+            {popular.map((product) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onSelect={goToProduct}
+                onQuickAdd={(p) => addToCart(p.units?.[0]?.id)}
               />
             ))}
           </div>
+        ) : (
+          <div className="empty-state">Le catalogue se charge, revenez dans un instant.</div>
         )}
       </section>
 
-      <section className="content-grid single">
-        <section className="panel" id="best-sellers">
-          <div className="panel-header">
-            <div>
-              <p className="panel-kicker">Meilleures ventes</p>
-              <h2>MEILLEURES VENTES</h2>
-            </div>
-            <button className="view-link" onClick={() => navigate('/shop')}>
-              Tout voir
-            </button>
-          </div>
-
-          <div className="product-grid">
-            {products.slice(0, 6).map((product, index) => (
-              <button key={product.id} className="product-card" onClick={() => openProduct(product)}>
-                <div className="product-image">
-                  <span>{index === 0 ? 'New' : index === 1 ? 'HOT' : 'Pro'}</span>
-                  <div className="product-hover-overlay">
-                    <span className="quick-add" onClick={(event) => quickAdd(event, product)}>
-                      Ajout rapide
-                    </span>
-                  </div>
-                </div>
-                <div className="product-content">
-                  <div className="product-category">{product.category || 'Prix'}</div>
-                  <h3>{product.name}</h3>
-                  <p>{product.description}</p>
-                  <div className="product-footer">
-                    <strong>{currency.format(product.basePrice || 0)}</strong>
-                    <span>Ajouter au panier</span>
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </section>
-      </section>
-
-      <section className="content-grid single">
-        <div className="panel-header standalone">
+      <section>
+        <div className="section-head">
           <div>
-            <p className="panel-kicker">Acheter par catégorie</p>
-            <h2>ACHETER PAR CATÉGORIE</h2>
+            <span className="eyebrow">Pourquoi Reforge</span>
+            <h2>Pourquoi nous choisir</h2>
           </div>
         </div>
-
-        <div className="category-grid">
-          {categories.map((category) => (
-            <button className={`category-card category-${category.key}`} key={category.key} onClick={() => navigate('/shop')}>
-              <div className="category-glow" />
-              <div>
-                <p className="panel-kicker">Collection</p>
-                <h3>{category.name}</h3>
-              </div>
-              <span>{category.accent} →</span>
-            </button>
+        <div className="feature-grid">
+          {FEATURES.map((feature) => (
+            <article className="feature-card" key={feature.title}>
+              <div className="feature-icon">{feature.icon}</div>
+              <h3>{feature.title}</h3>
+              <p>{feature.text}</p>
+            </article>
           ))}
         </div>
       </section>
 
-      <section className="offer-panel" id="promo">
-        <div>
-          <p className="panel-kicker">Offres de la semaine</p>
-          <h2>{weekOffer.headline}</h2>
-          <p className="offer-emphasis">{weekOffer.text}</p>
+      <section>
+        <div className="section-head">
+          <div>
+            <span className="eyebrow">Avis clients</span>
+            <h2>Ce qu'en disent nos clients</h2>
+          </div>
         </div>
-        <button className="primary-btn" onClick={() => navigate('/shop')}>
+        <div className="testimonial-grid">
+          {TESTIMONIALS.map((testimonial) => (
+            <article className="testimonial-card" key={testimonial.name}>
+              <span className="testimonial-stars">★★★★★</span>
+              <p className="testimonial-quote">"{testimonial.quote}"</p>
+              <div className="testimonial-author">
+                <span className="testimonial-avatar">{testimonial.initials}</span>
+                <div>
+                  <strong>{testimonial.name}</strong>
+                  <span>{testimonial.role}</span>
+                </div>
+              </div>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      <section className="promo-banner">
+        <div>
+          <span className="eyebrow">{weekOffer.headline}</span>
+          <h2>{weekOffer.text}</h2>
+          <p>Valable sur toute la boutique, sans code promo à saisir.</p>
+        </div>
+        <button className="btn btn-primary" onClick={() => navigate('/shop')}>
           {weekOffer.cta}
         </button>
       </section>
