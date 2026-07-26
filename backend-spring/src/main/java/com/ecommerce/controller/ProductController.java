@@ -80,7 +80,8 @@ public class ProductController {
                 "category", product.getCategory().getName(),
                 "stock", product.getUnits().stream()
                         .filter(unit -> unit.getStatus().name().equals("AVAILABLE"))
-                        .count()
+                        .count(),
+                "units", product.getUnits().stream().map(this::toUnitSummary).toList()
         );
     }
 

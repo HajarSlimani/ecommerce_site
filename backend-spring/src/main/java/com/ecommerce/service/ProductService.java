@@ -25,11 +25,11 @@ public class ProductService {
     private final PriceHistoryRepository priceHistoryRepository;
 
     public List<Product> getAllProducts() {
-        return productRepository.findAll();
+        return productRepository.findAllWithUnits();
     }
 
     public Product getProduct(Long id) {
-        return productRepository.findById(id)
+        return productRepository.findByIdWithUnits(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found: " + id));
     }
 
