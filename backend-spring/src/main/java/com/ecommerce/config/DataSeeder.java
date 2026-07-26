@@ -103,7 +103,7 @@ public class DataSeeder implements CommandLineRunner {
     public void run(String... args) {
         if (userRepository.count() == 0) {
             userRepository.save(User.builder()
-                    .email("demo@arcade.dev")
+                    .email("demo@reforge.dev")
                     .password("demo-password")
                     .role(Role.CUSTOMER)
                     .createdAt(LocalDateTime.now())

@@ -15,4 +15,6 @@ public interface ProductRepository extends JpaRepository<Product, Long> {
     java.util.Optional<Product> findByIdWithUnits(Long id);
 
     java.util.Optional<Product> findByName(String name);
+
+    long countByCategoryId(Long categoryId);
 }

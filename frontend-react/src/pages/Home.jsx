@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { categories, currency, weekOffer, FALLBACK_IMAGE } from '../lib/api.js';
+import { currency, weekOffer, FALLBACK_IMAGE } from '../lib/api.js';
 import { useShop } from '../context/ShopContext.jsx';
 import ProductCard from '../components/ProductCard.jsx';
 
@@ -49,7 +49,7 @@ const TESTIMONIALS = [
 ];
 
 export default function Home() {
-  const { products, addToCart } = useShop();
+  const { products, categories, addToCart } = useShop();
   const navigate = useNavigate();
 
   const popular = useMemo(() => products.slice(0, 4), [products]);
@@ -125,11 +125,13 @@ export default function Home() {
         </div>
         <div className="category-grid">
           {categories.map((category) => (
-            <button className="category-card" key={category.key} onClick={() => navigate('/shop')}>
-              <span className="count">Collection</span>
+            <button className="category-card" key={category.id ?? category.name} onClick={() => navigate('/shop')}>
+              <span className="count">
+                {category.productCount != null ? `${category.productCount} produits` : 'Collection'}
+              </span>
               <div>
                 <h3>{category.name}</h3>
-                <span className="accent">{category.accent} →</span>
+                <span className="accent">Voir la sélection →</span>
               </div>
             </button>
           ))}

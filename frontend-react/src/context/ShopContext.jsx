@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { DEMO_USER_ID, fallbackProducts, fetchJson, normalizeProducts } from '../lib/api.js';
+import { DEMO_USER_ID, fallbackCategories, fallbackProducts, fetchJson, normalizeProducts } from '../lib/api.js';
 
 const ShopContext = createContext(null);
 
 export function ShopProvider({ children }) {
   const [products, setProducts] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState(null);
   const [selectedUnitId, setSelectedUnitId] = useState(null);
   const [cart, setCart] = useState(null);
@@ -38,14 +39,16 @@ export function ShopProvider({ children }) {
   async function loadData() {
     setLoading(true);
     try {
-      const [productsResponse, cartResponse, ordersResponse] = await Promise.all([
+      const [productsResponse, categoriesResponse, cartResponse, ordersResponse] = await Promise.all([
         fetchJson('/api/products'),
+        fetchJson('/api/categories'),
         fetchJson(`/api/cart/${DEMO_USER_ID}`),
         fetchJson(`/api/orders/${DEMO_USER_ID}`)
       ]);
 
       const normalizedProducts = normalizeProducts(productsResponse);
       setProducts(normalizedProducts.length ? normalizedProducts : fallbackProducts);
+      setCategories(Array.isArray(categoriesResponse) && categoriesResponse.length ? categoriesResponse : fallbackCategories);
       setSelectedProductId(normalizedProducts[0]?.id || fallbackProducts[0].id);
       setSelectedUnitId(normalizedProducts[0]?.units?.[0]?.id || fallbackProducts[0].units[0].id);
       setCart(cartResponse);
@@ -53,6 +56,7 @@ export function ShopProvider({ children }) {
       setMessage('Boutique chargée et connectée au backend.');
     } catch (error) {
       setProducts(fallbackProducts);
+      setCategories(fallbackCategories);
       setSelectedProductId(fallbackProducts[0].id);
       setSelectedUnitId(fallbackProducts[0].units[0].id);
       setMessage('Backend indisponible, affichage du mode démo local.');
@@ -126,6 +130,7 @@ export function ShopProvider({ children }) {
 
   const value = {
     products,
+    categories,
     selectedProduct,
     selectedProductId,
     setSelectedProductId,

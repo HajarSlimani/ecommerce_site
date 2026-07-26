@@ -6,11 +6,13 @@ export const currency = new Intl.NumberFormat('fr-FR', {
   currency: 'EUR'
 });
 
-// Repli tant que l'endpoint GET /api/categories n'existe pas côté backend.
-export const categories = [
-  { name: 'Jeux', key: 'games', accent: 'Voir les jeux' },
-  { name: 'Matériel', key: 'gear', accent: 'Voir le matériel' },
-  { name: 'Accessoires', key: 'accessories', accent: 'Voir les accessoires' }
+// Repli hors-ligne : utilisé uniquement si GET /api/categories échoue
+// (backend indisponible). En temps normal, ShopContext charge les
+// catégories réelles depuis l'API.
+export const fallbackCategories = [
+  { id: 'games', name: 'Jeux', accent: 'Voir les jeux' },
+  { id: 'gear', name: 'Matériel', accent: 'Voir le matériel' },
+  { id: 'accessories', name: 'Accessoires', accent: 'Voir les accessoires' }
 ];
 
 export const weekOffer = {
