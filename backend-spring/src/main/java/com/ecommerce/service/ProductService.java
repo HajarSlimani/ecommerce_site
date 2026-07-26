@@ -43,6 +43,7 @@ public class ProductService {
                 .name(request.getName())
                 .description(request.getDescription())
                 .basePrice(request.getBasePrice())
+                .imageUrl(request.getImageUrl())
                 .build();
 
         Product saved = productRepository.save(product);

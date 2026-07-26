@@ -13,6 +13,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -123,6 +125,7 @@ public class DataSeeder implements CommandLineRunner {
                     .description(seed.description())
                     .category(category)
                     .basePrice(BigDecimal.valueOf(seed.basePrice()))
+                    .imageUrl(placeholderImage(seed.name()))
                     .build();
 
             seed.units().forEach(unitSeed -> {
@@ -139,5 +142,14 @@ public class DataSeeder implements CommandLineRunner {
 
             productRepository.save(product);
         }
+    }
+
+    // Le backend n'a pas encore de vraies photos produit : on génère une image
+    // de repli stable (toujours la même pour un même nom de produit), avec le
+    // même service que le frontend (picsum.photos), en attendant un vrai
+    // pipeline d'upload d'images.
+    private String placeholderImage(String productName) {
+        String seed = URLEncoder.encode(productName, StandardCharsets.UTF_8);
+        return "https://picsum.photos/seed/" + seed + "/480/360";
     }
 }

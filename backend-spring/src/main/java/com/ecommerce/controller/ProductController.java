@@ -13,6 +13,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -35,15 +36,9 @@ public class ProductController {
     @GetMapping("/{id}")
     public Map<String, Object> getProduct(@PathVariable Long id) {
         Product product = productService.getProduct(id);
-        return Map.of(
-                "id", product.getId(),
-                "name", product.getName(),
-                "description", product.getDescription(),
-                "basePrice", product.getBasePrice(),
-                "category", product.getCategory().getName(),
-                "units", product.getUnits().stream().map(this::toUnitSummary).toList(),
-                "priceHistory", priceHistoryRepository.findByProductIdOrderByTimestampDesc(id)
-        );
+        Map<String, Object> response = toProductSummary(product);
+        response.put("priceHistory", priceHistoryRepository.findByProductIdOrderByTimestampDesc(id));
+        return response;
     }
 
     @PostMapping
@@ -71,28 +66,32 @@ public class ProductController {
         return ResponseEntity.ok(Map.of("status", "ok"));
     }
 
+    // Map.of(...) rejette toute valeur null (NullPointerException) : une
+    // description ou une image absente en base faisait planter cet endpoint.
+    // LinkedHashMap accepte les valeurs nulles et préserve l'ordre d'insertion.
     private Map<String, Object> toProductSummary(Product product) {
-        return Map.of(
-                "id", product.getId(),
-                "name", product.getName(),
-                "description", product.getDescription(),
-                "basePrice", product.getBasePrice(),
-                "category", product.getCategory().getName(),
-                "stock", product.getUnits().stream()
-                        .filter(unit -> unit.getStatus().name().equals("AVAILABLE"))
-                        .count(),
-                "units", product.getUnits().stream().map(this::toUnitSummary).toList()
-        );
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("id", product.getId());
+        map.put("name", product.getName());
+        map.put("description", product.getDescription());
+        map.put("basePrice", product.getBasePrice());
+        map.put("imageUrl", product.getImageUrl());
+        map.put("category", product.getCategory().getName());
+        map.put("stock", product.getUnits().stream()
+                .filter(unit -> unit.getStatus().name().equals("AVAILABLE"))
+                .count());
+        map.put("units", product.getUnits().stream().map(this::toUnitSummary).toList());
+        return map;
     }
 
     private Map<String, Object> toUnitSummary(ProductUnit unit) {
-        return Map.of(
-                "id", unit.getId(),
-                "serialNumber", unit.getSerialNumber(),
-                "grade", unit.getGrade(),
-                "currentPrice", unit.getCurrentPrice(),
-                "status", unit.getStatus(),
-                "acquisitionDate", unit.getAcquisitionDate()
-        );
+        Map<String, Object> map = new LinkedHashMap<>();
+        map.put("id", unit.getId());
+        map.put("serialNumber", unit.getSerialNumber());
+        map.put("grade", unit.getGrade());
+        map.put("currentPrice", unit.getCurrentPrice());
+        map.put("status", unit.getStatus());
+        map.put("acquisitionDate", unit.getAcquisitionDate());
+        return map;
     }
 }

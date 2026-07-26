@@ -29,6 +29,9 @@ public class Product {
     @Column(length = 2000)
     private String description;
 
+    @Column(length = 500)
+    private String imageUrl;
+
     @Column(nullable = false, precision = 12, scale = 2)
     private BigDecimal basePrice;
 

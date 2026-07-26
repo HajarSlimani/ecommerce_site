@@ -20,6 +20,8 @@ public class CreateProductRequest {
 
     private String description;
 
+    private String imageUrl;
+
     @NotNull
     @DecimalMin("0.0")
     private BigDecimal basePrice;
