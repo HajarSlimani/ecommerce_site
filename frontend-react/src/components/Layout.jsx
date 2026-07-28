@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { NavLink, Outlet } from 'react-router-dom';
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useShop } from '../context/ShopContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 
 const NAV_LINKS = [
   { to: '/', label: 'Accueil', end: true },
@@ -9,8 +10,15 @@ const NAV_LINKS = [
 
 export default function Layout() {
   const { cart } = useShop();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const itemCount = cart?.items?.reduce((sum, item) => sum + Number(item.quantity || 0), 0) || 0;
+
+  function handleLogout() {
+    logout();
+    navigate('/');
+  }
 
   return (
     <div className="app-shell">
@@ -30,7 +38,14 @@ export default function Layout() {
           </nav>
 
           <div className="top-actions">
-            <button className="icon-btn" type="button">Connexion</button>
+            {user ? (
+              <>
+                <span className="icon-btn" style={{ cursor: 'default' }}>{user.email}</span>
+                <button className="icon-btn" type="button" onClick={handleLogout}>Déconnexion</button>
+              </>
+            ) : (
+              <NavLink to="/login" className="icon-btn">Connexion</NavLink>
+            )}
             <NavLink to="/cart" className="cart-chip">
               Panier
               {itemCount > 0 && <span className="cart-count">{itemCount}</span>}

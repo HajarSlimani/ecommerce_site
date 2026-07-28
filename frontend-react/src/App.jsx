@@ -5,6 +5,8 @@ import Home from './pages/Home.jsx';
 import Shop from './pages/Shop.jsx';
 import CartPage from './pages/CartPage.jsx';
 import Admin from './pages/Admin.jsx';
+import Login from './pages/Login.jsx';
+import Register from './pages/Register.jsx';
 import NotFound from './pages/NotFound.jsx';
 
 function App() {
@@ -15,6 +17,8 @@ function App() {
         <Route path="shop" element={<Shop />} />
         <Route path="cart" element={<CartPage />} />
         <Route path="admin" element={<Admin />} />
+        <Route path="login" element={<Login />} />
+        <Route path="register" element={<Register />} />
         <Route path="*" element={<NotFound />} />
       </Route>
     </Routes>
