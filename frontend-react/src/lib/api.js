@@ -1,5 +1,4 @@
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-export const DEMO_USER_ID = 1;
 export const AUTH_TOKEN_KEY = 'reforge_auth_token';
 
 export function getStoredToken() {

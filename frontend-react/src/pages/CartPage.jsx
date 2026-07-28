@@ -1,9 +1,21 @@
 import React from 'react';
-import { DEMO_USER_ID, currency } from '../lib/api.js';
+import { Link } from 'react-router-dom';
+import { currency } from '../lib/api.js';
 import { useShop } from '../context/ShopContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
 
 export default function CartPage() {
-  const { cart, orders, checkout, busy, loading, totalCart } = useShop();
+  const { cart, orders, checkout, busy, loading, totalCart, isAuthenticated } = useShop();
+  const { user } = useAuth();
+
+  if (!isAuthenticated) {
+    return (
+      <div className="empty-state">
+        Connecte-toi pour voir ton panier et tes commandes.{' '}
+        <Link to="/login">Se connecter</Link>
+      </div>
+    );
+  }
 
   return (
     <div className="two-col">
@@ -11,7 +23,7 @@ export default function CartPage() {
         <div className="panel-title">
           <div>
             <span className="eyebrow">Votre panier</span>
-            <h2>Compte démo #{DEMO_USER_ID}</h2>
+            <h2>{user?.email}</h2>
           </div>
           <span className="status-pill">{cart?.status || 'ACTIVE'}</span>
         </div>

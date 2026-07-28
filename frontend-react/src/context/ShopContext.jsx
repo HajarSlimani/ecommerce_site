@@ -1,9 +1,11 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import { DEMO_USER_ID, fallbackCategories, fallbackProducts, fetchJson, normalizeProducts } from '../lib/api.js';
+import { authFetchJson, fallbackCategories, fallbackProducts, fetchJson, normalizeProducts } from '../lib/api.js';
+import { useAuth } from './AuthContext.jsx';
 
 const ShopContext = createContext(null);
 
 export function ShopProvider({ children }) {
+  const { isAuthenticated, loading: authLoading } = useAuth();
   const [products, setProducts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [selectedProductId, setSelectedProductId] = useState(null);
@@ -27,8 +29,10 @@ export function ShopProvider({ children }) {
   }, [selectedProduct, selectedUnitId]);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (!authLoading) {
+      loadData();
+    }
+  }, [authLoading, isAuthenticated]);
 
   useEffect(() => {
     if (selectedProduct && !selectedProductId) {
@@ -42,8 +46,8 @@ export function ShopProvider({ children }) {
       const [productsResponse, categoriesResponse, cartResponse, ordersResponse] = await Promise.all([
         fetchJson('/api/products'),
         fetchJson('/api/categories'),
-        fetchJson(`/api/cart/${DEMO_USER_ID}`),
-        fetchJson(`/api/orders/${DEMO_USER_ID}`)
+        isAuthenticated ? authFetchJson('/api/cart') : Promise.resolve(null),
+        isAuthenticated ? authFetchJson('/api/orders') : Promise.resolve([])
       ]);
 
       const normalizedProducts = normalizeProducts(productsResponse);
@@ -53,7 +57,11 @@ export function ShopProvider({ children }) {
       setSelectedUnitId(normalizedProducts[0]?.units?.[0]?.id || fallbackProducts[0].units[0].id);
       setCart(cartResponse);
       setOrders(Array.isArray(ordersResponse) ? ordersResponse : []);
-      setMessage('Boutique chargée et connectée au backend.');
+      setMessage(
+        isAuthenticated
+          ? 'Boutique chargée et connectée au backend.'
+          : 'Boutique chargée. Connecte-toi pour voir ton panier et tes commandes.'
+      );
     } catch (error) {
       setProducts(fallbackProducts);
       setCategories(fallbackCategories);
@@ -89,9 +97,14 @@ export function ShopProvider({ children }) {
       return;
     }
 
+    if (!isAuthenticated) {
+      setMessage('Connecte-toi pour ajouter un article au panier.');
+      return;
+    }
+
     setBusy(true);
     try {
-      const updatedCart = await fetchJson(`/api/cart/${DEMO_USER_ID}/items`, {
+      const updatedCart = await authFetchJson('/api/cart/items', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ productUnitId: unitId, quantity: 1 })
@@ -106,13 +119,18 @@ export function ShopProvider({ children }) {
   }
 
   async function checkout() {
+    if (!isAuthenticated) {
+      setMessage('Connecte-toi pour valider ta commande.');
+      return;
+    }
+
     setBusy(true);
     try {
-      const order = await fetchJson(`/api/orders/${DEMO_USER_ID}/checkout`, {
+      const order = await authFetchJson('/api/orders/checkout', {
         method: 'POST'
       });
       setOrders((current) => [order, ...current]);
-      const refreshedCart = await fetchJson(`/api/cart/${DEMO_USER_ID}`);
+      const refreshedCart = await authFetchJson('/api/cart');
       setCart(refreshedCart);
       setMessage('Commande validée.');
     } catch (error) {
@@ -150,7 +168,8 @@ export function ShopProvider({ children }) {
     checkout,
     totalCart,
     totalUnits,
-    avgPrice
+    avgPrice,
+    isAuthenticated
   };
 
   return <ShopContext.Provider value={value}>{children}</ShopContext.Provider>;
