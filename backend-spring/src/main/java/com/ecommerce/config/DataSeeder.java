@@ -9,6 +9,7 @@ import com.ecommerce.repository.ProductRepository;
 import com.ecommerce.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +33,7 @@ public class DataSeeder implements CommandLineRunner {
     private final CategoryRepository categoryRepository;
     private final ProductRepository productRepository;
     private final UserRepository userRepository;
+    private final PasswordEncoder passwordEncoder;
 
     private record SeedUnit(String serialNumber, ConditionGrade grade, double price) {}
 
@@ -106,7 +108,7 @@ public class DataSeeder implements CommandLineRunner {
         if (userRepository.count() == 0) {
             userRepository.save(User.builder()
                     .email("demo@reforge.dev")
-                    .password("demo-password")
+                    .password(passwordEncoder.encode("demo-password"))
                     .role(Role.CUSTOMER)
                     .createdAt(LocalDateTime.now())
                     .build());
