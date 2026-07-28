@@ -15,3 +15,9 @@ spring:
   jackson:
     serialization:
       write-dates-as-timestamps: false
+
+app:
+  jwt:
+    # Clé de signature HMAC — à surcharger en prod via la variable d'env APP_JWT_SECRET.
+    secret: ${APP_JWT_SECRET:reforge-dev-secret-change-me-in-production-please-0123456789}
+    expiration-ms: ${APP_JWT_EXPIRATION_MS:86400000}
