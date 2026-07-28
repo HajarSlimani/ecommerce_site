@@ -35,9 +35,9 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/products/**", "/api/categories/**").permitAll()
                         // Premier endpoint réellement protégé par le token JWT.
                         .requestMatchers("/api/auth/me").authenticated()
-                        // Panier/commandes : encore ouverts pour l'instant, le temps de
-                        // brancher le vrai userId issu du token (voir roadmap — la suite
-                        // de l'étape 5 retire le DEMO_USER_ID).
+                        // Panier/commandes : le userId n'est plus reçu en path, il est
+                        // déduit du token (voir CartController/OrderController).
+                        .requestMatchers("/api/cart/**", "/api/orders/**").authenticated()
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

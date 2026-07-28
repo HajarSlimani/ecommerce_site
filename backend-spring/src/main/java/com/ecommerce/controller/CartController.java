@@ -2,9 +2,13 @@ package com.ecommerce.controller;
 
 import com.ecommerce.dto.AddCartItemRequest;
 import com.ecommerce.entity.Cart;
+import com.ecommerce.entity.User;
+import com.ecommerce.service.AuthService;
 import com.ecommerce.service.CartService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
@@ -17,25 +21,31 @@ import java.util.Map;
 public class CartController {
 
     private final CartService cartService;
+    private final AuthService authService;
 
-    @GetMapping("/{userId}")
-    public Map<String, Object> getCart(@PathVariable Long userId) {
-        Cart cart = cartService.getOrCreateActiveCart(userId);
+    @GetMapping
+    public Map<String, Object> getCart(@AuthenticationPrincipal UserDetails principal) {
+        Cart cart = cartService.getOrCreateActiveCart(currentUserId(principal));
         return toResponse(cart);
     }
 
-    @PostMapping("/{userId}/items")
-    public Map<String, Object> addItem(@PathVariable Long userId,
+    @PostMapping("/items")
+    public Map<String, Object> addItem(@AuthenticationPrincipal UserDetails principal,
                                        @Valid @RequestBody AddCartItemRequest request) {
-        Cart cart = cartService.addItem(userId, request);
+        Cart cart = cartService.addItem(currentUserId(principal), request);
         return toResponse(cart);
     }
 
-    @DeleteMapping("/{userId}/items/{itemId}")
-    public Map<String, Object> removeItem(@PathVariable Long userId,
+    @DeleteMapping("/items/{itemId}")
+    public Map<String, Object> removeItem(@AuthenticationPrincipal UserDetails principal,
                                           @PathVariable Long itemId) {
-        Cart cart = cartService.removeItem(userId, itemId);
+        Cart cart = cartService.removeItem(currentUserId(principal), itemId);
         return toResponse(cart);
+    }
+
+    private Long currentUserId(UserDetails principal) {
+        User user = authService.getByEmail(principal.getUsername());
+        return user.getId();
     }
 
     private Map<String, Object> toResponse(Cart cart) {
