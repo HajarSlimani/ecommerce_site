@@ -1,5 +1,30 @@
 export const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 export const DEMO_USER_ID = 1;
+export const AUTH_TOKEN_KEY = 'reforge_auth_token';
+
+export function getStoredToken() {
+  return localStorage.getItem(AUTH_TOKEN_KEY);
+}
+
+export function setStoredToken(token) {
+  if (token) {
+    localStorage.setItem(AUTH_TOKEN_KEY, token);
+  } else {
+    localStorage.removeItem(AUTH_TOKEN_KEY);
+  }
+}
+
+// Comme fetchJson, mais attache le token JWT (s'il existe) en en-tête
+// Authorization. À utiliser pour tout appel qui doit s'exécuter au nom de
+// l'utilisateur connecté (ex. /api/auth/me).
+export async function authFetchJson(path, options = {}) {
+  const token = getStoredToken();
+  const headers = { ...(options.headers || {}) };
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+  return fetchJson(path, { ...options, headers });
+}
 
 export const currency = new Intl.NumberFormat('fr-FR', {
   style: 'currency',
@@ -40,16 +65,16 @@ export const fallbackProducts = [
 
 export async function fetchJson(path, options = {}) {
   const response = await fetch(`${API_BASE}${path}`, options);
-  if (!response.ok) {
-    throw new Error(`Request failed: ${response.status}`);
-  }
-
   const contentType = response.headers.get('content-type') || '';
-  if (!contentType.includes('application/json')) {
-    return null;
+  const isJson = contentType.includes('application/json');
+  const body = isJson ? await response.json().catch(() => null) : null;
+
+  if (!response.ok) {
+    const message = body?.error || `Request failed: ${response.status}`;
+    throw new Error(message);
   }
 
-  return response.json();
+  return body;
 }
 
 // Le backend n'expose pas encore de champ imageUrl pour les produits.
