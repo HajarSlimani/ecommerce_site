@@ -17,4 +17,13 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
             "where o.user.id = :userId " +
             "order by o.createdAt desc")
     List<Order> findByUserIdOrderByCreatedAtDesc(Long userId);
+
+    // Vue admin : toutes les commandes, tous utilisateurs confondus.
+    @Query("select distinct o from Order o " +
+            "left join fetch o.user " +
+            "left join fetch o.items i " +
+            "left join fetch i.productUnit pu " +
+            "left join fetch pu.product " +
+            "order by o.createdAt desc")
+    List<Order> findAllOrderByCreatedAtDesc();
 }

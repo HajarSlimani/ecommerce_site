@@ -38,6 +38,12 @@ public class SecurityConfig {
                         // Panier/commandes : le userId n'est plus reçu en path, il est
                         // déduit du token (voir CartController/OrderController).
                         .requestMatchers("/api/cart/**", "/api/orders/**").authenticated()
+                        // Dashboard admin : réservé au rôle ADMIN. La lecture du
+                        // catalogue reste publique (règle GET plus haut), seules les
+                        // mutations produit et les routes /api/admin/** sont gardées.
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.POST, "/api/products/**").hasRole("ADMIN")
+                        .requestMatchers(HttpMethod.PATCH, "/api/products/**").hasRole("ADMIN")
                         .anyRequest().permitAll()
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class)

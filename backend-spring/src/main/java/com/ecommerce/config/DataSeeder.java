@@ -20,11 +20,11 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 /**
- * Seeds a demo user (id=1, matching DEMO_USER_ID in the frontend) and a
- * product catalog on every boot. Idempotent: each product is only inserted
- * if no product with that name already exists, so you can add new entries
- * to CATALOG below and just restart the backend — existing data won't be
- * touched or duplicated.
+ * Seeds a demo customer account, a demo admin account, and a product catalog
+ * on every boot. Idempotent: each entity is only inserted if it doesn't
+ * already exist (by email for users, by name for products), so you can add
+ * new entries to CATALOG below and just restart the backend — existing data
+ * won't be touched or duplicated.
  */
 @Component
 @RequiredArgsConstructor
@@ -105,11 +105,21 @@ public class DataSeeder implements CommandLineRunner {
     @Override
     @Transactional
     public void run(String... args) {
-        if (userRepository.count() == 0) {
+        if (userRepository.findByEmail("demo@reforge.dev").isEmpty()) {
             userRepository.save(User.builder()
                     .email("demo@reforge.dev")
                     .password(passwordEncoder.encode("demo-password"))
                     .role(Role.CUSTOMER)
+                    .createdAt(LocalDateTime.now())
+                    .build());
+        }
+
+        // Compte admin de démo pour accéder au dashboard (/admin côté frontend).
+        if (userRepository.findByEmail("admin@reforge.dev").isEmpty()) {
+            userRepository.save(User.builder()
+                    .email("admin@reforge.dev")
+                    .password(passwordEncoder.encode("admin-password"))
+                    .role(Role.ADMIN)
                     .createdAt(LocalDateTime.now())
                     .build());
         }
