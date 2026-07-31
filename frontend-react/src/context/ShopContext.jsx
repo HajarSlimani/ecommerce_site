@@ -80,7 +80,7 @@ export function ShopProvider({ children }) {
 
     setBusy(true);
     try {
-      await fetchJson(`/api/products/${productId}/price/refresh?demandScore=${pricingScore}`, {
+      await authFetchJson(`/api/products/${productId}/price/refresh?demandScore=${pricingScore}`, {
         method: 'POST'
       });
       await loadData();
